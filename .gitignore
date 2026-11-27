@@ -1,0 +1,21 @@
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.iml
+.idea/
+android/captures/
+
+# iPhone
+ios/Jejak.xcodeproj/
+ios/build/
+ios/JejakCore/.build/
+ios/JejakCore/.swiftpm/
+xcuserdata/
+DerivedData/
+
+# Everything
+dist/
+.DS_Store
+*.log

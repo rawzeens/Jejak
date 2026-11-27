@@ -1,0 +1,110 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Run tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon
+
+      - name: Build the app
+        run: |
+          ./gradlew :app:assembleDebug --no-daemon
+          mkdir -p ../dist
+          cp app/build/outputs/apk/debug/app-debug.apk ../dist/Jejak-1.0.0-android.apk
+
+      - name: Upload app
+        uses: actions/upload-artifact@v7
+        with:
+          name: Jejak-android
+          path: dist/*.apk
+          if-no-files-found: error
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-test-report
+          path: android/app/build/reports/tests/
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*.apk
+
+  ios:
+    name: iPhone
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Test the shared rules (timeline, exports, same results as Android)
+        working-directory: ios/JejakCore
+        run: |
+          swift test
+          swift run core-check
+
+      - name: Make the Xcode project
+        run: |
+          brew install xcodegen
+          xcodegen
+
+      - name: Build the app (iPhone simulator)
+        run: |
+          xcodebuild -project Jejak.xcodeproj -scheme Jejak -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build | tail -40
+          test -d build/DerivedData/Build/Products/Debug-iphonesimulator/Jejak.app
+
+      - name: Build for a real iPhone (not signed)
+        run: |
+          xcodebuild -project Jejak.xcodeproj -scheme Jejak -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build | tail -20
+
+      - name: Take screenshots in the simulator
+        run: scripts/screenshots.sh build/DerivedData/Build/Products/Debug-iphonesimulator/Jejak.app ../dist/ios-screenshots
+
+      - name: Pack the simulator app
+        run: |
+          cd build/DerivedData/Build/Products/Debug-iphonesimulator
+          zip -qry "$GITHUB_WORKSPACE/dist/Jejak-1.0.0-ios-simulator.zip" Jejak.app
+
+      - name: Upload app and screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: Jejak-ios
+          path: |
+            dist/*.zip
+            dist/ios-screenshots/*.png
+          if-no-files-found: error
