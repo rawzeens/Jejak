@@ -5,6 +5,8 @@ accuracy and speed), keeps recording with the screen off, and turns each day int
 how you travelled between them, and when the signal dropped. Two native apps from one repo: **Android (Java)** and
 **iPhone (Swift)**. They read a day the same way, down to the metre.
 
+**Android**
+
 | Timeline | A trip | A stop | Live |
 |---|---|---|---|
 | ![Timeline](docs/screenshots/android/timeline.png) | ![Trip](docs/screenshots/android/trip.png) | ![Stop](docs/screenshots/android/stop.png) | ![Live](docs/screenshots/android/live.png) |
@@ -12,6 +14,12 @@ how you travelled between them, and when the signal dropped. Two native apps fro
 | Every reading | Places | Settings |
 |---|---|---|
 | ![Every reading](docs/screenshots/android/every-reading.png) | ![Places](docs/screenshots/android/places.png) | ![Settings](docs/screenshots/android/settings.png) |
+
+**iPhone**
+
+| Timeline | A trip | Live | Every reading |
+|---|---|---|---|
+| ![Timeline](docs/screenshots/iphone/timeline.png) | ![Trip](docs/screenshots/iphone/trip.png) | ![Live](docs/screenshots/iphone/live.png) | ![Every reading](docs/screenshots/iphone/every-reading.png) |
 
 ## What it does
 
